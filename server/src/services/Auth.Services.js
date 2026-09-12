@@ -26,7 +26,6 @@ const register = async ({ name, email, password, currency }) => {
 
 const login = async ({ email, password }) => {
   const user = await User.findOne({ email });
-    console.log('User found:', user ? user.email : 'NONE');   // add this
   if (!user) {
     const error = new Error('Invalid email or password');
     error.statusCode = 401;
@@ -34,7 +33,6 @@ const login = async ({ email, password }) => {
   }
 
   const isMatch = await bcrypt.compare(password, user.passwordHash);
-    console.log('Password match:', isMatch);   // add this
 
   if (!isMatch) {
     const error = new Error('Invalid email or password');

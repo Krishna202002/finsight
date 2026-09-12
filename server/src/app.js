@@ -3,15 +3,21 @@ const cors = require('cors')
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/Auth.Routes.js');
 
-// add near the top, after app.use(express.json())
+const accountRoutes = require('./routes/Account.Routes.js');
+const transactionRoutes = require('./routes/Transaction.routes.js');
+
+
+
+
 const app = express();
 
-// add before the error handler
 
 
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
+app.use('/api/accounts', accountRoutes);
+app.use('/api/transactions', transactionRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
