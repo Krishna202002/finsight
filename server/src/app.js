@@ -5,11 +5,12 @@ const authRoutes = require('./routes/Auth.Routes.js');
 
 const accountRoutes = require('./routes/Account.Routes.js');
 const transactionRoutes = require('./routes/Transaction.routes.js');
-
-
-
-
 const app = express();
+
+const analyticsRoutes = require('./routes/Analytics.Routes.js');
+app.use('/api/analytics', analyticsRoutes);
+
+
 
 
 
