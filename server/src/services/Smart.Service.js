@@ -139,7 +139,7 @@ const forecastNextMonth = async (userId) => {
 };
 
 
-const Budget = require('../models/Budget');
+const Budget = require('../models/Budget.models.js');
 
 const getHealthScore = async (userId) => {
   const now = new Date();

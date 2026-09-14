@@ -44,7 +44,7 @@ app.get('/api/health', (req, res) => {
 });
 
 
-const smartRoutes = require('./routes/smartRoutes');
+const smartRoutes = require('./routes/Smart.Routes.js');
 app.use('/api/smart', smartRoutes);
 
 app.use('/api/auth', authRoutes);
