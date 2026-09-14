@@ -11,9 +11,12 @@ const analyticsRoutes = require('./routes/Analytics.Routes.js');
 app.use('/api/analytics', analyticsRoutes);
 
 
+const importRoutes = require('./routes/Import.Routes.js');
+app.use('/api/import', importRoutes);
 
+const budgetRoutes = require('./routes/Budget.Routes.js');
 
-
+app.use('/api/budgets', budgetRoutes);
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
