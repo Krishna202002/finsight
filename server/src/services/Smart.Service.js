@@ -57,4 +57,143 @@ const detectRecurring = async (userId) => {
   return recurring;
 };
 
-module.exports = { detectRecurring };
+const detectAnomalies = async (userId) => {
+  const transactions = await Transaction.find({ userId, type: 'expense' }).sort({ date: 1 });
+
+  // group by category for baseline stats
+  const byCategory = {};
+  transactions.forEach((t) => {
+    if (!byCategory[t.category]) byCategory[t.category] = [];
+    byCategory[t.category].push(t);
+  });
+
+  const anomalies = [];
+
+  for (const category in byCategory) {
+    const txs = byCategory[category];
+    if (txs.length < 4) continue; // need enough history to trust mean/stdDev
+
+    const amounts = txs.map((t) => t.amount);
+    const mean = amounts.reduce((a, b) => a + b, 0) / amounts.length;
+    const variance = amounts.reduce((sum, a) => sum + Math.pow(a - mean, 2), 0) / amounts.length;
+    const stdDev = Math.sqrt(variance);
+
+    const threshold = mean + 2 * stdDev;
+
+    txs.forEach((t) => {
+      if (t.amount > threshold) {
+        anomalies.push({
+          transactionId: t._id,
+          category: t.category,
+          merchant: t.merchant,
+          amount: t.amount,
+          date: t.date,
+          categoryAverage: Math.round(mean),
+          threshold: Math.round(threshold),
+        });
+      }
+    });
+  }
+
+  return anomalies.sort((a, b) => new Date(b.date) - new Date(a.date));
+};
+
+const forecastNextMonth = async (userId) => {
+  const now = new Date();
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+
+  const monthlyTotals = await Transaction.aggregate([
+    {
+      $match: {
+        userId: toObjectId(userId),
+        type: 'expense',
+        date: { $gte: sixMonthsAgo, $lte: now },
+      },
+    },
+    {
+      $group: {
+        _id: { year: { $year: '$date' }, month: { $month: '$date' } },
+        total: { $sum: '$amount' },
+      },
+    },
+    { $sort: { '_id.year': 1, '_id.month': 1 } },
+  ]);
+
+  if (monthlyTotals.length === 0) {
+    return { forecast: 0, basedOnMonths: 0, message: 'Not enough data to forecast' };
+  }
+
+  // use up to the last 3 months for the moving average
+  const recentMonths = monthlyTotals.slice(-3);
+  const avg = recentMonths.reduce((sum, m) => sum + m.total, 0) / recentMonths.length;
+
+  return {
+    forecast: Math.round(avg),
+    basedOnMonths: recentMonths.length,
+    recentHistory: recentMonths.map((m) => ({
+      year: m._id.year,
+      month: m._id.month,
+      total: m.total,
+    })),
+  };
+};
+
+
+const Budget = require('../models/Budget');
+
+const getHealthScore = async (userId) => {
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
+
+  const startDate = new Date(year, month - 1, 1);
+  const endDate = new Date(year, month, 0, 23, 59, 59);
+
+  const summary = await Transaction.aggregate([
+    { $match: { userId: toObjectId(userId), type: { $in: ['income', 'expense'] }, date: { $gte: startDate, $lte: endDate } } },
+    { $group: { _id: '$type', total: { $sum: '$amount' } } },
+  ]);
+
+  const income = summary.find((s) => s._id === 'income')?.total || 0;
+  const expense = summary.find((s) => s._id === 'expense')?.total || 0;
+  const savingsRate = income > 0 ? (income - expense) / income : 0; // 0 to 1 scale
+
+  const budgets = await Budget.find({ userId, month, year });
+  let budgetAdherence = 1; // default to perfect if no budgets set
+  if (budgets.length > 0) {
+    const categorySpend = await Transaction.aggregate([
+      { $match: { userId: toObjectId(userId), type: 'expense', date: { $gte: startDate, $lte: endDate } } },
+      { $group: { _id: '$category', spent: { $sum: '$amount' } } },
+    ]);
+    const spendMap = {};
+    categorySpend.forEach((c) => { spendMap[c._id] = c.spent; });
+
+    const withinBudgetCount = budgets.filter((b) => (spendMap[b.category] || 0) <= b.monthlyLimit).length;
+    budgetAdherence = withinBudgetCount / budgets.length; // 0 to 1 scale
+  }
+
+  const recurring = await detectRecurring(userId);
+  const recurringTotal = recurring.reduce((sum, r) => sum + r.averageAmount, 0);
+  const recurringRatio = expense > 0 ? Math.min(recurringTotal / expense, 1) : 0;
+  // lower fixed-expense ratio is healthier (more flexibility) — invert it for scoring
+  const flexibilityScore = 1 - recurringRatio;
+
+  // weighted composite — you choose these weights, and can justify them in an interview
+  const rawScore =
+    savingsRate * 0.4 +
+    budgetAdherence * 0.4 +
+    flexibilityScore * 0.2;
+
+  const score = Math.round(Math.max(0, Math.min(rawScore, 1)) * 100);
+
+  return {
+    score,
+    breakdown: {
+      savingsRate: Math.round(savingsRate * 100),
+      budgetAdherence: Math.round(budgetAdherence * 100),
+      flexibilityScore: Math.round(flexibilityScore * 100),
+    },
+  };
+};
+
+module.exports = { detectRecurring, detectAnomalies, forecastNextMonth, getHealthScore };

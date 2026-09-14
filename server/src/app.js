@@ -7,6 +7,12 @@ const accountRoutes = require('./routes/Account.Routes.js');
 const transactionRoutes = require('./routes/Transaction.routes.js');
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:5173', // your local Vite dev server, adjust if different
+  process.env.CLIENT_URL,  // your deployed frontend URL, set as an env var
+];
+
+
 const analyticsRoutes = require('./routes/Analytics.Routes.js');
 app.use('/api/analytics', analyticsRoutes);
 
@@ -17,7 +23,16 @@ app.use('/api/import', importRoutes);
 const budgetRoutes = require('./routes/Budget.Routes.js');
 
 app.use('/api/budgets', budgetRoutes);
-app.use(cors());
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // needed since you're using cookies for refresh tokens
+}));
 app.use(express.json());
 app.use(cookieParser());
 app.use('/api/accounts', accountRoutes);
@@ -27,6 +42,10 @@ app.use('/api/transactions', transactionRoutes);
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+
+const smartRoutes = require('./routes/smartRoutes');
+app.use('/api/smart', smartRoutes);
 
 app.use('/api/auth', authRoutes);
 

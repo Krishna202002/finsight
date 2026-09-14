@@ -3,11 +3,14 @@ const router = express.Router();
 const accountController = require('../controllers/Account.Controller.js');
 const { protect } = require('../middleware/Auth.Middleware.js');
 
-router.use(protect); // every route below requires auth
+const validate = require('../middleware/Validate.Middleware.js');
+const { createAccountSchema, updateAccountSchema } = require('../validators/Account.Validator.js');
 
-router.post('/', accountController.createAccount);
+router.use(protect); 
+
+router.post('/', validate(createAccountSchema), accountController.createAccount);
 router.get('/', accountController.getAccounts);
-router.patch('/:id', accountController.updateAccount);
+router.patch('/:id', validate(updateAccountSchema), accountController.updateAccount);
 router.delete('/:id', accountController.deleteAccount);
 
 module.exports = router;
