@@ -10,19 +10,9 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:5173', // your local Vite dev server, adjust if different
   process.env.CLIENT_URL,  // your deployed frontend URL, set as an env var
-];
+].filter(Boolean);
 
 
-const analyticsRoutes = require('./routes/Analytics.Routes.js');
-app.use('/api/analytics', analyticsRoutes);
-
-
-const importRoutes = require('./routes/Import.Routes.js');
-app.use('/api/import', importRoutes);
-
-const budgetRoutes = require('./routes/Budget.Routes.js');
-
-app.use('/api/budgets', budgetRoutes);
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -35,6 +25,18 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser());
+
+const analyticsRoutes = require('./routes/Analytics.Routes.js');
+app.use('/api/analytics', analyticsRoutes);
+
+
+const importRoutes = require('./routes/Import.Routes.js');
+app.use('/api/import', importRoutes);
+
+const budgetRoutes = require('./routes/Budget.Routes.js');
+
+app.use('/api/budgets', budgetRoutes);
+
 app.use('/api/accounts', accountRoutes);
 app.use('/api/transactions', transactionRoutes);
 
@@ -45,6 +47,7 @@ app.get('/api/health', (req, res) => {
 
 
 const smartRoutes = require('./routes/Smart.Routes.js');
+const { boolean } = require('zod');
 app.use('/api/smart', smartRoutes);
 
 app.use('/api/auth', authRoutes);
