@@ -5,6 +5,9 @@ const NAV_LINKS = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/transactions', label: 'Transactions' },
   { to: '/accounts', label: 'Accounts' },
+    { to: '/budgets', label: 'Budgets' },
+  { to: '/insights', label: 'Insights' },
+
 ];
 
 const Navbar = () => {
@@ -29,11 +32,10 @@ const Navbar = () => {
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
-                    isActive
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${isActive
                       ? 'bg-slate-950 text-white'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                  }`}
+                    }`}
                 >
                   {link.label}
                 </Link>

@@ -10,6 +10,8 @@ import Transactions from './pages/Transactions';
 
 import Accounts from './pages/Accounts';
 
+import Budgets from './pages/Budgets';
+import SmartFeatures from './pages/SmartFeatures';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -33,6 +35,8 @@ function AppRoutes() {
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/" element={<Navigate to="/dashboard" />} />
       <Route path="/accounts" element={<ProtectedRoute><Accounts /></ProtectedRoute>} />
+      <Route path="/insights" element={<ProtectedRoute><SmartFeatures /></ProtectedRoute>} />   
+      <Route path="/budgets" element={<ProtectedRoute><Budgets /></ProtectedRoute>} />
     </Routes>
   );
 }
