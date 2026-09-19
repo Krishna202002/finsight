@@ -1,11 +1,14 @@
-const StatCard = ({ label, value, tone }) => {
-  const colors = { good: '#1a7f37', bad: '#cf222e', neutral: '#1f2328' };
-  return (
-    <div style={{ border: '1px solid #d0d7de', borderRadius: 8, padding: '16px 20px', minWidth: 160 }}>
-      <div style={{ fontSize: 13, color: '#57606a' }}>{label}</div>
-      <div style={{ fontSize: 24, fontWeight: 600, color: colors[tone] || colors.neutral }}>{value}</div>
-    </div>
-  );
+const TONE_STYLES = {
+  good: 'text-emerald-600',
+  bad: 'text-red-600',
+  neutral: 'text-slate-900',
 };
+
+const StatCard = ({ label, value, tone }) => (
+  <div className="bg-white border border-slate-200 rounded-xl p-5 flex-1 min-w-[160px]">
+    <div className="text-sm text-slate-500 mb-1">{label}</div>
+    <div className={`text-2xl font-bold ${TONE_STYLES[tone] || TONE_STYLES.neutral}`}>{value}</div>
+  </div>
+);
 
 export default StatCard;

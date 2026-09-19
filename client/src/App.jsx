@@ -6,6 +6,11 @@ import Register from './pages/Register.jsx';
 import Dashboard from './pages/Dashboard';
 import Navbar from './components/Navbar';
 
+import Transactions from './pages/Transactions';
+
+import Accounts from './pages/Accounts';
+
+
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <p>Loading...</p>;
@@ -22,10 +27,12 @@ const ProtectedRoute = ({ children }) => {
 function AppRoutes() {
   return (
     <Routes>
+      <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/" element={<Navigate to="/dashboard" />} />
+      <Route path="/accounts" element={<ProtectedRoute><Accounts /></ProtectedRoute>} />
     </Routes>
   );
 }
