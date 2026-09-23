@@ -2,8 +2,8 @@
 
 FinSight is a full-stack personal finance platform built on the MERN stack. It goes beyond basic expense tracking by combining multi-account management, budget tracking, MongoDB aggregation-powered analytics, CSV statement import with duplicate detection, and statistics-based smart features like recurring transaction detection, anomaly flagging, and spending forecasts.
 
-**Live demo:** _
-**API base URL:** _
+**Live demo:** https://finsight-ten-gamma.vercel.app
+**API base URL:** https://finsight-87s5.onrender.com/api
 
 ---
 
@@ -236,4 +236,4 @@ Manual testing was performed via Postman across all endpoints, covering:
 
 ## Author
 
-Built by Krishna kumar  as a backend-focused learning project covering REST API design, authentication, MongoDB aggregation pipelines, and statistics-based feature engineering.
+Built by [Your Name] as a backend-focused learning project covering REST API design, authentication, MongoDB aggregation pipelines, and statistics-based feature engineering.
